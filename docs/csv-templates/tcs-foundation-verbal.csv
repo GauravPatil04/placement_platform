@@ -1,0 +1,11 @@
+text,type,category,difficulty,option1,option2,option3,option4,correctOption
+"Choose the word most similar in meaning to 'ABUNDANT':",multiple-choice,verbal,Easy,"Scarce","Plentiful","Limited","Rare",2
+"Choose the word most opposite in meaning to 'ANCIENT':",multiple-choice,verbal,Easy,"Old","Modern","Historic","Traditional",2
+"Find the correctly spelled word:",multiple-choice,verbal,Easy,"Accomodate","Accommodate","Acomodate","Acommodate",2
+"Complete the sentence: She is good ___ mathematics.",multiple-choice,verbal,Easy,"in","at","on","with",2
+"Choose the correct synonym for 'METICULOUS':",multiple-choice,verbal,Medium,"Careless","Careful","Reckless","Hasty",2
+"Identify the error: 'Neither of the two boys are present today.'",multiple-choice,verbal,Medium,"Neither of","the two boys","are present","No error",3
+"Choose the appropriate preposition: He is afraid ___ dogs.",multiple-choice,verbal,Medium,"from","of","with","by",2
+"Select the word that best fits: The ___ of the building was impressive.",multiple-choice,verbal,Medium,"architect","architecture","architectural","architecting",2
+"Choose the correct idiom meaning 'to reveal a secret':",multiple-choice,verbal,Hard,"Spill the beans","Break the ice","Hit the nail","Burn the bridge",1
+"Identify the figure of speech: 'The world is a stage'",multiple-choice,verbal,Hard,"Simile","Metaphor","Personification","Hyperbole",2

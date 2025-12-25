@@ -1,0 +1,11 @@
+text,type,category,difficulty,option1,option2,option3,option4,correctOption
+"Find the odd one out: Dog, Cat, Cow, Table",multiple-choice,reasoning,Easy,"Dog","Cat","Cow","Table",4
+"Complete the series: 2, 4, 8, 16, ?",multiple-choice,reasoning,Easy,"20","24","32","64",3
+"If BOOK is coded as CPPL, how is WORD coded?",multiple-choice,reasoning,Medium,"XPSE","XQSE","WQSE","WPRD",1
+"All roses are flowers. Some flowers are red. Therefore:",multiple-choice,reasoning,Medium,"All roses are red","Some roses are red","No roses are red","Cannot be determined",4
+"A is B's sister. B is C's mother. D is C's father. How is A related to D?",multiple-choice,reasoning,Medium,"Sister","Sister-in-law","Daughter","Wife",2
+"In a certain code, RAIN is written as 8$%6 and MORE is written as 7#8@. How is ROME written?",multiple-choice,reasoning,Hard,"8#7@","8@7#","7#7@","8#7$",2
+"If South-East becomes North, North-East becomes West and so on, what will West become?",multiple-choice,reasoning,Hard,"North-East","North-West","South-East","South-West",3
+"A clock shows 3:15. What is the angle between the hour and minute hands?",multiple-choice,reasoning,Hard,"0°","7.5°","15°","22.5°",2
+"In a row of students, John is 7th from the left and 12th from the right. How many students are in the row?",multiple-choice,reasoning,Medium,"18","19","20","21",1
+"If the day before yesterday was Thursday, what will be the day after tomorrow?",multiple-choice,reasoning,Easy,"Sunday","Monday","Tuesday","Wednesday",2

@@ -1,0 +1,11 @@
+text,type,category,difficulty,option1,option2,option3,option4,correctOption
+"What is 15% of 300?",multiple-choice,quant,Easy,"30","35","45","50",3
+"If x + 5 = 12, what is the value of x?",multiple-choice,quant,Easy,"5","6","7","8",3
+"The sum of three consecutive numbers is 72. What is the largest number?",multiple-choice,quant,Medium,"23","24","25","26",3
+"A car travels 240 km in 4 hours. What is its speed in m/s?",multiple-choice,quant,Medium,"16.67 m/s","20 m/s","60 m/s","240 m/s",1
+"Find the area of a circle with radius 7 cm (π = 22/7):",multiple-choice,quant,Medium,"144 cm²","154 cm²","164 cm²","174 cm²",2
+"If 2^x = 32, what is the value of x?",multiple-choice,quant,Medium,"4","5","6","7",2
+"The average of 6 numbers is 30. If one number is removed, the average becomes 28. What is the removed number?",multiple-choice,quant,Hard,"36","38","40","42",3
+"A mixture contains milk and water in the ratio 5:3. If 16 liters of water is added, the ratio becomes 5:7. Find the initial quantity of milk.",multiple-choice,quant,Hard,"20 liters","25 liters","30 liters","35 liters",1
+"What is the value of log₁₀(1000)?",multiple-choice,quant,Medium,"2","3","4","5",2
+"If sin θ = 0.5, what is the value of θ in degrees (0° < θ < 90°)?",multiple-choice,quant,Medium,"15°","30°","45°","60°",2
