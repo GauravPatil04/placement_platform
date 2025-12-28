@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { generateComprehensiveSummary } from '@/lib/gemini';
 
 export async function GET(req: Request) {
     try {
@@ -124,6 +125,51 @@ export async function POST(req: Request) {
             });
         }
 
+        // Calculate percentage
+        const percentage = Math.round((score / total) * 100);
+
+        // Generate AI summary
+        let aiSummary = null;
+        try {
+            const stats = {
+                score: percentage,
+                accuracy: percentage,
+                totalQuestions: total,
+                topics: {
+                    [company]: { correct: score, total: total }
+                }
+            };
+            
+            const comprehensiveSummary = await generateComprehensiveSummary(stats, testTitle);
+            
+            // Format the comprehensive summary as a readable text
+            aiSummary = `
+📊 COMPREHENSIVE TEST ANALYSIS
+═════════════════════════════════
+
+🎯 Performance Overview:
+${comprehensiveSummary.performanceOverview}
+
+✅ Your Strengths:
+${comprehensiveSummary.strengthsAnalysis}
+
+📈 Areas for Improvement:
+${comprehensiveSummary.weaknessAnalysis}
+
+📚 Study Recommendations:
+${comprehensiveSummary.studyRecommendations.map((rec, i) => `${i + 1}. ${rec}`).join('\n')}
+
+🗓️ 7-Day Action Plan:
+${comprehensiveSummary.actionPlan}
+
+💪 Motivational Message:
+${comprehensiveSummary.motivationalMessage}
+            `.trim();
+        } catch (aiError) {
+            console.error('Error generating AI summary:', aiError);
+            aiSummary = "AI summary generation is temporarily unavailable. Please review your performance manually.";
+        }
+
         // Create result
         const result = await prisma.result.create({
             data: {
@@ -131,6 +177,7 @@ export async function POST(req: Request) {
                 testId: test.id,
                 score,
                 total,
+                aiFeedback: aiSummary,
             },
         });
 
@@ -139,7 +186,8 @@ export async function POST(req: Request) {
             resultId: result.id,
             score,
             total,
-            percentage: Math.round((score / total) * 100),
+            percentage,
+            aiSummary,
         });
     } catch (error) {
         console.error('Result submission error:', error);

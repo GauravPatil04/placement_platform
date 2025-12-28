@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { CheckCircle, XCircle, Loader2, Sparkles } from "lucide-react";
+import { CheckCircle, XCircle, Loader2, Sparkles, TrendingUp, BookOpen, Target } from "lucide-react";
 
 interface ResultData {
   id: string;
@@ -27,6 +27,7 @@ export default function ResultDetailPage() {
   const [result, setResult] = useState<ResultData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['overview']));
 
   useEffect(() => {
     const fetchResult = async () => {
@@ -52,6 +53,16 @@ export default function ResultDetailPage() {
       fetchResult();
     }
   }, [params.id]);
+
+  const toggleSection = (section: string) => {
+    const newSections = new Set(expandedSections);
+    if (newSections.has(section)) {
+      newSections.delete(section);
+    } else {
+      newSections.add(section);
+    }
+    setExpandedSections(newSections);
+  };
 
   if (loading) {
     return (
@@ -95,8 +106,14 @@ export default function ResultDetailPage() {
     return 'Need More Practice 📚';
   };
 
+  const getScoreBgColor = (percentage: number) => {
+    if (percentage >= 80) return 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800';
+    if (percentage >= 60) return 'bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-800';
+    return 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800';
+  };
+
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto pb-10">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Test Results</h1>
         <Button variant="outline" onClick={() => router.back()}>
@@ -110,7 +127,7 @@ export default function ResultDetailPage() {
           <CardTitle>{result.test.title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 text-sm text-muted-foreground">
+          <div className="flex gap-4 text-sm text-muted-foreground flex-wrap">
             <span>Type: {result.test.type === 'topic' ? 'Aptitude' : 'Company'}</span>
             <span>•</span>
             <span>Difficulty: {result.test.difficulty}</span>
@@ -122,7 +139,7 @@ export default function ResultDetailPage() {
 
       {/* Score Cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+        <Card className={`border-2 ${getScoreBgColor(result.percentage)}`}>
           <CardHeader>
             <CardTitle className="text-sm font-medium">Score</CardTitle>
           </CardHeader>
@@ -144,6 +161,9 @@ export default function ResultDetailPage() {
             <div className="text-2xl font-bold">
               {getPerformanceLabel(result.percentage)}
             </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              {result.score > result.total / 2 ? '📈 Above Average' : '📉 Below Average'}
+            </p>
           </CardContent>
         </Card>
 
@@ -162,24 +182,83 @@ export default function ResultDetailPage() {
         </Card>
       </div>
 
-      {/* AI Feedback */}
+      {/* Comprehensive AI Feedback */}
       {result.aiFeedback && (
-        <Card className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/20 border-violet-200 dark:border-violet-800">
+        <div className="space-y-4">
+          <Card className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/20 border-violet-200 dark:border-violet-800 border-2">
+            <CardHeader className="cursor-pointer pb-3" onClick={() => toggleSection('feedback')}>
+              <CardTitle className="flex items-center justify-between gap-2 text-lg">
+                <span className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                  AI Coach - Comprehensive Analysis
+                </span>
+                <span className="text-xs text-violet-600 dark:text-violet-400">
+                  {expandedSections.has('feedback') ? '▼' : '▶'}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            {expandedSections.has('feedback') && (
+              <CardContent>
+                <div className="prose dark:prose-invert max-w-none text-sm leading-relaxed">
+                  <div className="whitespace-pre-wrap space-y-4 text-foreground/90">
+                    {result.aiFeedback.split('\n').map((line, idx) => {
+                      // Style headers
+                      if (line.includes('═') || line.startsWith('📊') || line.startsWith('✅') || 
+                          line.startsWith('📈') || line.startsWith('📚') || line.startsWith('🗓️') || 
+                          line.startsWith('💪')) {
+                        return (
+                          <div key={idx} className="font-semibold text-foreground mt-3 mb-2">
+                            {line}
+                          </div>
+                        );
+                      }
+                      if (line.trim() === '') return null;
+                      return (
+                        <div key={idx} className="ml-2">
+                          {line}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+        </div>
+      )}
+
+      {/* Quick Stats */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-              AI Coach Feedback
+            <CardTitle className="flex items-center gap-2 text-base">
+              <TrendingUp className="h-5 w-5 text-blue-600" />
+              Next Steps
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="prose dark:prose-invert max-w-none">
-              <div className="whitespace-pre-line text-sm leading-relaxed">
-                {result.aiFeedback}
-              </div>
-            </div>
+          <CardContent className="space-y-2 text-sm">
+            <p>✓ Review your weak areas based on the AI analysis above</p>
+            <p>✓ Follow the 7-day study plan provided by your AI coach</p>
+            <p>✓ Practice similar questions regularly</p>
+            <p>✓ Take another test in 3-4 days to track progress</p>
           </CardContent>
         </Card>
-      )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <BookOpen className="h-5 w-5 text-orange-600" />
+              Resources
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <p>📖 Practice more questions on weak topics</p>
+            <p>🎓 Watch tutorial videos for difficult concepts</p>
+            <p>👥 Join study groups for peer learning</p>
+            <p>🎯 Focus on quality over quantity of practice</p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Action Buttons */}
       <div className="flex justify-center gap-4 pt-6">
