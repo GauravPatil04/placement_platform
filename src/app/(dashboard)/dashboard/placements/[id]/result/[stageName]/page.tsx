@@ -28,6 +28,48 @@ export default function StageResultPage() {
         );
 
         if (stage) {
+          // Generate AI summary for this stage
+          let aiSummary = null;
+          try {
+            const feedbackData = stage.feedback ? JSON.parse(stage.feedback) : {};
+            const categoryBreakdown = feedbackData.categoryBreakdown || {};
+            const wrongQuestions = feedbackData.wrongQuestions || [];
+            
+            console.log('Fetched stage data:', {
+              score: stage.score,
+              total: stage.total,
+              percentage: stage.percentage,
+              categoryBreakdown,
+              wrongQuestionsCount: wrongQuestions.length,
+            });
+
+            // Call AI summary generation endpoint with all wrong questions
+            const summaryRes = await fetch('/api/results/ai-summary', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                score: stage.percentage || 0,
+                totalQuestions: stage.total || 0,
+                correct: stage.score || 0,
+                wrong: (stage.total || 0) - (stage.score || 0),
+                testTitle: `${data.company} - ${stageName}`,
+                categoryBreakdown,
+                wrongQuestions,
+              }),
+            });
+
+            if (summaryRes.ok) {
+              const summaryData = await summaryRes.json();
+              console.log('AI Summary generated successfully');
+              aiSummary = summaryData.summary;
+            } else {
+              const errorData = await summaryRes.json();
+              console.error('AI Summary endpoint error:', errorData);
+            }
+          } catch (error) {
+            console.error('Error generating AI summary:', error);
+          }
+
           setResultData({
             stageName,
             isPassed: stage.isPassed,
@@ -37,6 +79,7 @@ export default function StageResultPage() {
             nextStage: data.status,
             track: data.finalTrack,
             timeSpent: stage.timeSpent,
+            feedback: aiSummary,
           });
         } else if (stageName === 'voice') {
           // Handle voice assessment

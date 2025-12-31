@@ -137,9 +137,11 @@ export function StageResult({
             </div>
 
             {feedback && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 className="font-semibold text-blue-900 mb-2">Feedback</h3>
-                <p className="text-gray-700 leading-relaxed">{feedback}</p>
+              <div className="bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-300 rounded-lg p-6 shadow-sm">
+                <h3 className="font-bold text-slate-900 mb-4 text-lg">AI-POWERED PERFORMANCE ANALYSIS</h3>
+                <div className="text-slate-800 leading-relaxed whitespace-pre-wrap font-mono text-sm">
+                  {feedback}
+                </div>
               </div>
             )}
           </CardContent>

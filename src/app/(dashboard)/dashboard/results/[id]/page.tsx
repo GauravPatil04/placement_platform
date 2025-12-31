@@ -27,7 +27,7 @@ export default function ResultDetailPage() {
   const [result, setResult] = useState<ResultData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['overview']));
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['overview', 'feedback']));
 
   useEffect(() => {
     const fetchResult = async () => {
@@ -40,6 +40,12 @@ export default function ResultDetailPage() {
         }
 
         const data = await response.json();
+        console.log('Fetched result:', {
+          id: data.result.id,
+          aiFeedback: data.result.aiFeedback ? `[${data.result.aiFeedback.length} chars]` : 'null',
+          score: data.result.score,
+          total: data.result.total,
+        });
         setResult(data.result);
       } catch (err) {
         console.error('Error fetching result:', err);
@@ -185,40 +191,23 @@ export default function ResultDetailPage() {
       {/* Comprehensive AI Feedback */}
       {result.aiFeedback && (
         <div className="space-y-4">
-          <Card className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/20 border-violet-200 dark:border-violet-800 border-2">
+          <Card className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950/20 dark:to-slate-900/20 border-slate-300 dark:border-slate-700 border-2">
             <CardHeader className="cursor-pointer pb-3" onClick={() => toggleSection('feedback')}>
               <CardTitle className="flex items-center justify-between gap-2 text-lg">
                 <span className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-                  AI Coach - Comprehensive Analysis
+                  <Sparkles className="h-5 w-5 text-slate-600 dark:text-slate-400" />
+                  AI Performance Analysis
                 </span>
-                <span className="text-xs text-violet-600 dark:text-violet-400">
+                <span className="text-xs text-slate-600 dark:text-slate-400">
                   {expandedSections.has('feedback') ? '▼' : '▶'}
                 </span>
               </CardTitle>
             </CardHeader>
             {expandedSections.has('feedback') && (
               <CardContent>
-                <div className="prose dark:prose-invert max-w-none text-sm leading-relaxed">
-                  <div className="whitespace-pre-wrap space-y-4 text-foreground/90">
-                    {result.aiFeedback.split('\n').map((line, idx) => {
-                      // Style headers
-                      if (line.includes('═') || line.startsWith('📊') || line.startsWith('✅') || 
-                          line.startsWith('📈') || line.startsWith('📚') || line.startsWith('🗓️') || 
-                          line.startsWith('💪')) {
-                        return (
-                          <div key={idx} className="font-semibold text-foreground mt-3 mb-2">
-                            {line}
-                          </div>
-                        );
-                      }
-                      if (line.trim() === '') return null;
-                      return (
-                        <div key={idx} className="ml-2">
-                          {line}
-                        </div>
-                      );
-                    })}
+                <div className="text-sm leading-relaxed font-mono">
+                  <div className="whitespace-pre-wrap text-foreground/90">
+                    {result.aiFeedback}
                   </div>
                 </div>
               </CardContent>

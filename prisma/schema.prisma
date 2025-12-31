@@ -200,6 +200,7 @@ model AssessmentStage {
   percentage        Float?
   isPassed          Boolean               @default(false)
   timeSpent         Int?                  // in seconds
+  feedback          String?               @db.Text // Stores JSON feedback data including category breakdown and wrong questions
   submittedAt       DateTime?
   createdAt         DateTime              @default(now())
   

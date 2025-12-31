@@ -48,11 +48,23 @@ export async function POST(
             );
         }
 
-        // Calculate score and percentage
-        const percentage = total > 0 ? (score / total) * 100 : 0;
+        // Fetch questions with correct answers to calculate actual score
+        const test = await findTestForStage(application.company, stageName);
+        const questions = test ? await prisma.question.findMany({
+            where: { testId: test.id },
+            include: {
+                options: true,
+            },
+        }) : [];
+
+        // Calculate actual score and category breakdown
+        const scoreData = calculateDetailedScore(answers, questions);
+        const actualScore = scoreData.totalCorrect;
+        const actualTotal = scoreData.totalQuestions;
+        const percentage = actualTotal > 0 ? (actualScore / actualTotal) * 100 : 0;
 
         // Determine if passed based on company and stage
-        const isPassed = calculatePassStatus(application.company, stageName, percentage, score);
+        const isPassed = calculatePassStatus(application.company, stageName, percentage, actualScore);
 
         // Create or update assessment stage
         const assessmentStage = await prisma.assessmentStage.upsert({
@@ -62,20 +74,28 @@ export async function POST(
             create: {
                 applicationId: id,
                 stageName,
-                score,
-                total,
+                score: actualScore,
+                total: actualTotal,
                 percentage,
                 isPassed,
                 timeSpent,
                 submittedAt: new Date(),
+                feedback: JSON.stringify({
+                    categoryBreakdown: scoreData.categoryBreakdown,
+                    wrongQuestions: scoreData.wrongQuestions,
+                }), // Store both category breakdown and wrong questions
             },
             update: {
-                score,
-                total,
+                score: actualScore,
+                total: actualTotal,
                 percentage,
                 isPassed,
                 timeSpent,
                 submittedAt: new Date(),
+                feedback: JSON.stringify({
+                    categoryBreakdown: scoreData.categoryBreakdown,
+                    wrongQuestions: scoreData.wrongQuestions,
+                }),
             },
         });
 
@@ -130,8 +150,9 @@ export async function POST(
             isPassed,
             nextStage: isPassed ? nextStage : null,
             percentage,
-            score,
-            total,
+            score: actualScore,
+            total: actualTotal,
+            categoryBreakdown: scoreData.categoryBreakdown,
         });
     } catch (error) {
         console.error('Error submitting stage:', error);
@@ -215,4 +236,99 @@ async function assignTrack(
     }
 
     return 'Standard';
+}
+
+interface ScoreData {
+    totalCorrect: number;
+    totalQuestions: number;
+    categoryBreakdown: Record<string, { correct: number; total: number; percentage: number }>;
+    wrongQuestions: Array<{
+        id: string;
+        text: string;
+        category: string;
+        userAnswer: string;
+        correctAnswer: string;
+    }>;
+}
+
+function calculateDetailedScore(
+    answers: Record<string, string>,
+    questions: any[]
+): ScoreData {
+    const categoryBreakdown: Record<string, { correct: number; total: number; percentage: number }> = {};
+    const wrongQuestions: ScoreData['wrongQuestions'] = [];
+    let totalCorrect = 0;
+
+    for (const question of questions) {
+        const category = question.category || 'General';
+        const userAnswer = answers[question.id];
+        const correctOption = question.options.find((opt: any) => opt.isCorrect);
+        const isCorrect = correctOption && userAnswer === correctOption.text;
+
+        if (isCorrect) {
+            totalCorrect++;
+        } else {
+            // Track wrong questions with full details
+            wrongQuestions.push({
+                id: question.id,
+                text: question.text,
+                category,
+                userAnswer: userAnswer || 'Not answered',
+                correctAnswer: correctOption?.text || 'Unknown',
+            });
+        }
+
+        // Track category stats
+        if (!categoryBreakdown[category]) {
+            categoryBreakdown[category] = { correct: 0, total: 0, percentage: 0 };
+        }
+        categoryBreakdown[category].total++;
+        if (isCorrect) {
+            categoryBreakdown[category].correct++;
+        }
+    }
+
+    // Calculate percentages for each category
+    for (const category in categoryBreakdown) {
+        const data = categoryBreakdown[category];
+        data.percentage = data.total > 0 ? Math.round((data.correct / data.total) * 100) : 0;
+    }
+
+    return {
+        totalCorrect,
+        totalQuestions: questions.length,
+        categoryBreakdown,
+        wrongQuestions,
+    };
+}
+
+async function findTestForStage(company: string, stageName: string) {
+    const testMapping: Record<string, { company: string; topic?: string }> = {
+        foundation: { company: 'TCS', topic: 'Foundation' },
+        advanced: { company: 'TCS', topic: 'Advanced' },
+        coding: { company: 'TCS', topic: 'Coding' },
+        aptitude: { company: 'Wipro', topic: 'Aptitude' },
+        essay: { company: 'Wipro', topic: 'Essay' },
+    };
+
+    const key = stageName.toLowerCase();
+    const mapping = testMapping[key];
+
+    if (!mapping) {
+        return null;
+    }
+
+    const test = await prisma.test.findFirst({
+        where: {
+            type: 'company',
+            company: mapping.company,
+            OR: [
+                { topic: mapping.topic },
+                { title: { contains: mapping.topic, mode: 'insensitive' } },
+            ],
+        },
+        orderBy: { createdAt: 'desc' },
+    });
+
+    return test;
 }
